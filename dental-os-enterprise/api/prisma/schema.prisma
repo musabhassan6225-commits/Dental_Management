@@ -1,0 +1,43 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Patient {
+  id                String      @id @default(uuid())
+  firstName         String
+  lastName          String
+  dateOfBirth       DateTime
+  gender            String
+  email             String      @unique
+  phone             String
+  medicalHistory    Json?       // Stores allergies, systemic diseases
+  dentalHistory     Json?       
+  appointments      Appointment[]
+  clinicalRecords   ClinicalRecord[]
+  createdAt         DateTime    @default(now())
+}
+
+model ClinicalRecord {
+  id            String    @id @default(uuid())
+  patientId     String
+  patient       Patient   @relation(fields: [patientId], references: [id])
+  dentistId     String
+  odontogramData Json      // CRITICAL: Stores the state of all 32 teeth
+  notes         String?
+  createdAt     DateTime  @default(now())
+}
+
+model Appointment {
+  id          String   @id @default(uuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id])
+  startTime   DateTime
+  endTime     DateTime
+  status      String   // PENDING, COMPLETED, CANCELLED
+  type        String   // SURGERY, CLEANING, etc.
+}
